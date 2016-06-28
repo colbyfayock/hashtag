@@ -1,0 +1,12 @@
+{
+  "name": "node-web-scrape",
+  "version": "0.0.1",
+  "description": "Scrape le web.",
+  "main": "server.js",
+  "author": "Scotch",
+  "dependencies": {
+    "express": "latest",
+    "cron": "^1.1.0",
+    "twitter": "^1.3.0"
+  }
+}
