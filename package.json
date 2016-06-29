@@ -5,8 +5,10 @@
   "main": "server.js",
   "author": "Scotch",
   "dependencies": {
+    "bluebird": "^3.4.1",
     "express": "latest",
     "cron": "^1.1.0",
-    "twitter": "^1.3.0"
+    "twitter": "^1.3.0",
+    "instagram-node": "^0.5.8"
   }
 }

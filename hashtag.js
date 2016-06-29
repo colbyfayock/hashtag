@@ -1,46 +1,95 @@
+var Promise = require('bluebird');
 var express = require('express');
 var app     = express();
 var CronJob = require('cron').CronJob;
 var fs      = require('fs');
 var Twitter = require('./lib/twitter.js');
+var Instagram = require('./lib/instagram.js');
 
-new CronJob('00 */10 * * * *', function() {
 
-    var tweets = Twitter.get_tweets({
-        q: '#meaninglesstweettotestsomestuff',
-        result_type: 'recent'
-    }, function(data) {
-        var tweets = data.statuses,
-            results = [],
-            media = [];
+// Instagram Authorization Flow
 
-        for ( var i = 0, tweets_len = tweets.length; i < tweets_len; i++ ) {
+app.get('/authorize_user', Instagram.authorize_user);
+app.get('/handle_authorization', Instagram.handle_authorization);
 
-            if ( tweets[i].entities.media ) {
 
-                for ( var j = 0, media_len = tweets[i].entities.media.length; j < media_len; j++ ) {
-                    media.push({
-                        id: tweets[i].entities.media[j].id,
-                        media_url: tweets[i].entities.media[j].media_url
-                    });
-                }
+// Let's get hashtag content
 
-            }
+var get_hashtag = function(hashtag) {
 
-            results.push({
-                screen_name: tweets[i].user.screen_name,
-                text: tweets[i].text,
-                media: media.length > 0 ? media : false
-            });
+    console.log('# Starting hashtag');
 
-        }
-        console.log(results);
+    return new Promise(function(resolve, reject) {
+        resolve(hashtag);
     });
 
-    console.log('Looking for new tweets!');
+}
+
+
+// Set up cron to run fetch every so often
+
+new CronJob('*/10 * * * * *', function() {
+
+    get_hashtag('meaninglesstweettotestsomestuff').then(function(hashtag) {
+
+        return new Promise(function(resolve, reject) {
+
+            console.log('# Getting hashtags from Twitter');
+
+            Twitter.get_tweets({
+                q: '#' + hashtag,
+                result_type: 'recent'
+            }, function(data) {
+                console.log('## Success!');
+                resolve({
+                    hashtag: hashtag,
+                    posts: Twitter.format_tweets(data.statuses)
+                });
+            });
+
+        });
+
+    }).then(function(promise_data) {
+
+        return new Promise(function(resolve, reject) {
+
+            console.log('# Getting hashtags from Instagram');
+
+            Instagram.get_grams({
+                hashtag: promise_data.hashtag
+            }, function(data) {
+
+                console.log('## Success!');
+
+                Array.prototype.push.apply(promise_data.posts, Instagram.format_grams(data));
+
+                resolve({
+                    hashtag: promise_data.hashtag,
+                    posts: promise_data.posts
+                });
+
+            });
+
+        });
+
+    }).then(function(promise_data) {
+
+        console.log('# Woot! Hashtags got.');
+
+        var output_location = './output/hashtag.json';
+
+        fs.writeFile(output_location, JSON.stringify(promise_data, null, 4), function(errors){
+            console.log('## Output placed in ' + output_location);
+            console.log('##############################');
+        });
+
+    });
 
 }, null, true, 'America/New_York');
 
+
 app.listen('8081')
-console.log('Listening on port 8081');
+console.log('##############################');
+console.log('# Listening on port 8081');
+console.log('##############################');
 exports = module.exports = app;
