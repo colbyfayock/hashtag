@@ -28,7 +28,7 @@ var get_hashtag = function(hashtag) {
 
 // Set up cron to run fetch every so often
 
-new CronJob('*/10 * * * * *', function() {
+new CronJob('*/15 * * * * *', function() {
 
     get_hashtag('meaninglesstweettotestsomestuff').then(function(hashtag) {
 
@@ -75,6 +75,10 @@ new CronJob('*/10 * * * * *', function() {
     }).then(function(promise_data) {
 
         console.log('# Woot! Hashtags got.');
+
+        promise_data.posts.sort(function(a, b) {
+            return parseInt(a.created_at) - parseInt(b.created_at);
+        });
 
         var output_location = './output/hashtag.json';
 
