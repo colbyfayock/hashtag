@@ -1,9 +1,9 @@
 {
-  "name": "node-web-scrape",
+  "name": "hashtag",
   "version": "0.0.1",
-  "description": "Scrape le web.",
-  "main": "server.js",
-  "author": "Scotch",
+  "description": "Pull instagram and twitter into json object",
+  "main": "hashtag.js",
+  "author": "Colby Fayock",
   "dependencies": {
     "bluebird": "^3.4.1",
     "express": "latest",
